@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  discordId String   @unique
+  xp        Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  attempts UserAttempt[] // ← Added reverse relation to UserAttempt
+}
+
+model Problem {
+  id        String   @id @default(cuid())
+  number    String   @unique
+  originalBaseScore Int @default(0)
+  baseScore Int
+  solves    Int      @default(0)
+  attempts  Int      @default(0)
+  disabled  Boolean  @default(false)
+  isFinalized Boolean @default(false)
+  finalizedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userAttempts UserAttempt[] // ← Added reverse relation to UserAttempt
+}
+
+model UserAttempt {
+  id        String   @id @default(cuid())
+  userId    String
+  problemId String
+  attempts  Int      @default(0)
+  solved    Boolean  @default(false)
+  awardedXp Int      @default(0)
+  preFinalizeAwardedXp Int?
+  finalizeDelta Int   @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id])
+  problem Problem @relation(fields: [problemId], references: [id])
+
+  @@unique([userId, problemId])
+}
